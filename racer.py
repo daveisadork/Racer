@@ -403,8 +403,9 @@ class Tree:
             self.human = self.left_lane
         else:
             self.human = self.left_lane
-        #self.font = pygame.font.Font("font.ttf", 50)
-        #self.fps = self.font.render("", 1, BLACK)
+        if self.debug:
+            self.font = pygame.font.Font("font.ttf", 50)
+            self.fps = self.font.render("", 1, WHITE)
         clock = threading.Thread(None, self.clock, name="clock()")
         monitor = threading.Thread(None, self.thread_monitor,
             name="thread_monitor()")
@@ -558,47 +559,53 @@ class Tree:
                 elif event.key == K_SPACE:
                     if self.human.pre_staged.is_set():
                         self.human.stage()
-                        while pygame.key.get_pressed()[K_SPACE]:
-                            pygame.event.pump()
-                        if self.human.staged.is_set() and self.start.is_set():
-                            self.human.launched_time = time.time()
-                            self.human.launched.set()
-                        else:
-                            self.human.staged.clear()
-                            self.human.lights[1].off()
+                        #while pygame.key.get_pressed()[K_SPACE]:
+                        #    pygame.event.pump()
+                        #if self.human.staged.is_set() and self.start.is_set():
+                        #    self.human.launched_time = time.time()
+                        #    self.human.launched.set()
+                        #else:
+                        #    self.human.staged.clear()
+                        #    self.human.lights[1].off()
                     else:
                         self.reset()
-            # elif event.type == KEYUP and event.key in [K_m, K_z, K_SPACE] and False:
-                # if self.two_player:
-                    # if event.key == K_m:
-                        # if self.right_lane.staged.is_set() and self.start.is_set():
-                            # self.right_lane.launched.set()
-                            # self.tie.append(self.right_lane)
-                        # else:
-                            # self.right_lane.staged.clear()
-                            # self.right_lane.lights[1].off()
-                    # elif event.key == K_z:
-                        # if self.left_lane.staged.is_set() and self.start.is_set():
-                            # self.left_lane.launched.set()
-                            # self.tie.append(self.left_lane)
-                        # else:
-                            # self.left_lane.staged.clear()
-                            # self.left_lane.lights[1].off()                                
-                # elif event.key == K_SPACE:
-                    # if self.human.staged.is_set() and self.start.is_set():
-                        # self.human.launched.set()
-                    # else:
-                        # self.human.staged.clear()
-                        # self.human.lights[1].off()
+            elif event.type == KEYUP and event.key in [K_m, K_z, K_SPACE]:
+                if self.two_player:
+                    if event.key == K_m:
+                        if (self.right_lane.staged.is_set()
+                          and self.start.is_set()):
+                            self.right_lane.launched_time = time.time()
+                            self.right_lane.launched.set()
+                            self.tie.append(self.right_lane)
+                        else:
+                            self.right_lane.staged.clear()
+                            self.right_lane.lights[1].off()
+                    elif event.key == K_z:
+                        if (self.left_lane.staged.is_set() and
+                          self.start.is_set()):
+                            self.left_lane.launched_time = time.time()
+                            self.left_lane.launched.set()
+                            self.tie.append(self.left_lane)
+                        else:
+                            self.left_lane.staged.clear()
+                            self.left_lane.lights[1].off()                                
+                elif event.key == K_SPACE:
+                    if self.human.staged.is_set() and self.start.is_set():
+                        self.human.launched_time = time.time()
+                        self.human.launched.set()
+                    else:
+                        self.human.staged.clear()
+                        self.human.lights[1].off()
             elif (event.type == pygame.QUIT or
               (event.type == KEYDOWN and event.key in [K_ESCAPE, K_q])):
                 self.quit()
             #print event
     
     def draw(self):
-        #fps_rect = self.fps.get_rect()
-        #fps_rect.top = 10
-        #fps_rect.left = 10
+        if self.debug:
+            fps_rect = self.fps.get_rect()
+            fps_rect.top = 10
+            fps_rect.left = 10
         self.left_lane.draw()
         self.right_lane.draw()
         dirty = []
@@ -610,14 +617,16 @@ class Tree:
             dirty += self.right_lane.dirty_rects
             self.right_lane.dirty = False
             self.right_lane.dirty_rects = []
-        #self.screen.blit(self.fps, (fps_rect.left, fps_rect.top))
+        if self.debug:
+            self.screen.blit(self.fps, (fps_rect.left, fps_rect.top))
         if dirty:
             pygame.display.update(dirty)
 
     def clock(self):
         clock = pygame.time.Clock()
-        while not self.quitting.is_set(): 
-            #self.fps = self.font.render("%0.1f" % clock.get_fps(), 1, BLACK)
+        while not self.quitting.is_set():
+            if self.debug:
+                self.fps = self.font.render("%0.1f" % clock.get_fps(), 1, WHITE)
             clock.tick()
             self.draw()
   
