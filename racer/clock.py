@@ -1,5 +1,3 @@
-#!/bin/env/python
-
 # Racer - A drag racing practice tree
 # Copyright 2012 Dave Hayes <dwhayes@gmail.com>
 #
@@ -20,7 +18,6 @@
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
 # Code comments? We don't need no stinking code comments!
-
 
 import pygame
 

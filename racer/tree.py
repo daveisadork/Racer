@@ -1,5 +1,3 @@
-#!/bin/env/python
-
 # Racer - A drag racing practice tree
 # Copyright 2012 Dave Hayes <dwhayes@gmail.com>
 #
@@ -21,7 +19,6 @@
 
 # Code comments? We don't need no stinking code comments!
 
-
 import time
 import random
 import threading
@@ -36,12 +33,13 @@ class Tree:
     def __init__(self, tree_type="pro", delay=0.4, left_lane="computer",
                  right_lane="human", debug=False, perfect=0.0,
                  left_rollout=0.220, right_rollout=0.220, stats=False,
-                 amin=1.0, amax=3.0, cmin=-0.009, cmax=0.115):
+                 amin=1.0, amax=3.0, cmin=-0.009, cmax=0.115, auto_reset=False):
         self.perfect = perfect
         self.left_rollout = left_rollout
         self.right_rollout = right_rollout
         self.amin = amin
         self.amax = amax
+        self.auto_reset = auto_reset
         self.two_player = (left_lane == "human" and right_lane == "human")
         self.debug = debug
         self.stats = stats
@@ -156,6 +154,8 @@ class Tree:
         self.staged.clear()
         for lane in self.lanes.values():
             lane.reset()
+        if self.quitting.is_set():
+            return
         threading.Thread(None, self.staging, name="staging()").start()
 
     def staging(self):
@@ -242,6 +242,9 @@ class Tree:
                     lane.win()
         if self.human.log and self.stats:
             print "Round %d: %0.3f" % (len(self.human.log), self.human.reaction)
+        if self.auto_reset:
+            time.sleep(self.auto_reset)
+            self.reset()
      
     def win(self, lane):
         self.lanes[lane].win()
@@ -351,9 +354,8 @@ class Tree:
                 print "  " + thread.name
             
     def quit(self):
-        self.left_lane.flashing.clear()
-        self.right_lane.flashing.clear()
         self.quitting.set()
+        self.reset()
         if self.human.log and self.stats:
             best = None
             worst = None

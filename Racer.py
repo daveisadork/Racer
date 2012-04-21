@@ -1,4 +1,4 @@
-#!/bin/env/python
+#!/bin/env python
 
 # Racer - A drag racing practice tree
 # Copyright 2012 Dave Hayes <dwhayes@gmail.com>
@@ -34,6 +34,9 @@ def get_options():
     parser.add_option("-t", "--tree",
         action="store", type="string", dest="tree_type", metavar="TYPE", default="pro400",
         help="<pro400|pro500|sportsman> Sets tree type. Default: %default")
+    parser.add_option("-r", "--auto-reset",
+        action="store", type="float", dest="auto_reset", metavar="SECS", default=0,
+        help="Sets auto reset time in seconds (0 to disable). Default: %default")
     parser.add_option("-0", "--zero-perfect",
         action="store_true", dest="perfect", default=False,
         help="Shows a perfect reaction time as 0.000 instead of 0.400 or 0.500")
@@ -111,5 +114,5 @@ if __name__ == "__main__":
                 right_lane=options.right_lane, left_rollout=options.left_rollout,
                 right_rollout=options.right_rollout, debug=options.debug,
                 perfect=perfect, amax=options.amax, amin=options.amin,
-                stats=options.stats)
+                stats=options.stats, auto_reset=options.auto_reset)
 

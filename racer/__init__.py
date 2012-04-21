@@ -1,4 +1,4 @@
-#!/bin/env/python
+#!/bin/env python
 
 # Racer - A drag racing practice tree
 # Copyright 2012 Dave Hayes <dwhayes@gmail.com>
@@ -22,6 +22,7 @@
 # Code comments? We don't need no stinking code comments!
 
 import pygame
+
 
 pygame.display.init()
 pygame.font.init()
