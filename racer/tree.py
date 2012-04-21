@@ -127,7 +127,7 @@ class Tree:
         background = pygame.image.load("assets/background.png")
         background.convert()
         background_rect = background.get_rect()
-        if self.rect.width / self.rect.height <= 1.6:
+        if float(self.rect.width) / float(self.rect.height) <= 1.6:
             background = pygame.transform.smoothscale(
                 background,
                 (int(round(self.rect.height * 1.6, 0)), self.rect.height))
