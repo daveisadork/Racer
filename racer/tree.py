@@ -113,14 +113,14 @@ class Tree:
             self.font = pygame.font.Font("assets/font.ttf", 50)
             self.fps = self.font.render("", 1, (255, 255, 255))
         clock = threading.Thread(None, self._clock, name="clock()")
-        monitor = threading.Thread(None, self.thread_monitor,
-            name="thread_monitor()")
+        #monitor = threading.Thread(None, self.thread_monitor,
+        #    name="thread_monitor()")
         clock.start()
-        monitor.start()
+        #monitor.start()
         self.reset()
         self.event_loop()
         clock.join()
-        monitor.join()
+        #monitor.join()
      
     def scale(self):
         self.rect = self.screen.get_rect()
@@ -189,7 +189,7 @@ class Tree:
         else:
             self.reset()
             return
-        while (time.time() < self.start_time and
+        while (time.time() < self.start_time - 0.1 and
           self.left_lane.staged.is_set() and
           self.right_lane.staged.is_set()):
             time.sleep(0.001)
@@ -199,19 +199,47 @@ class Tree:
             self.reset()
             return
     
-    def race(self):
-        self.left_lane.start_time = self.right_lane.start_time = self.start_time
+    def timer(self):
         left = threading.Thread(None, self.left_lane.timer,
             name="Left Lane timer()")
         right = threading.Thread(None, self.right_lane.timer,
             name="Right Lane timer()")
+        if self.tree_type == "sportsman":
+            green_time = self.start_time + (3 * self.delay)
+        else:
+            green_time = self.start_time + self.delay
+        y2time = self.start_time + self.delay
+        y3time = self.start_time + (self.delay * 2)
         left.start()
         right.start()
         self.start.set()
+        while time.time() < self.start_time:
+            continue
+        self.left_lane.y1.set()
+        self.right_lane.y1.set()
+        if self.tree_type == "sportsman":
+            while time.time() < y2time:
+                continue
+            self.left_lane.y2.set()
+            self.right_lane.y2.set()
+            while time.time() < y3time:
+                continue
+            self.left_lane.y3.set()
+            self.right_lane.y3.set()
+        while time.time() < green_time:
+            continue
+        self.left_lane.g.set()
+        self.right_lane.g.set()
         self.left_lane.launched.wait()
         self.right_lane.launched.wait()
         left.join()
         right.join()
+    
+    def race(self):
+        self.left_lane.start_time = self.right_lane.start_time = self.start_time
+        self.timer()
+        time.sleep(0.1)
+        self.start_time = None
         #print "Left start time: %0.7f" % self.left_lane.start_time
         #print "Right start time: %0.7f" % self.right_lane.start_time
         if self.two_player:
@@ -247,10 +275,7 @@ class Tree:
                 #print "Loser:  Left Lane  RT %0.3f" % self.left_lane.reaction
         elif self.left_lane.reaction == self.right_lane.reaction:
             for lane in self.lanes.values():
-                if lane.computer is True:
-                    lane.lose()
-                elif lane.computer is False:
-                    lane.win()
+                lane.win()
         if self.human.log and self.stats:
             print "Round %d: %0.3f" % (len(self.human.log), self.human.reaction)
         if self.auto_reset:
@@ -333,7 +358,7 @@ class Tree:
             dirty += self.right_lane.dirty_rects
             self.right_lane.dirty = False
             self.right_lane.dirty_rects = []
-        if self.debug:
+        if self.debug and False:
             self.fps = self.font.render("%0.1f" % self.clock.get_fps(),
                     1, (255, 255, 255))
             fps_rect = self.fps.get_rect()

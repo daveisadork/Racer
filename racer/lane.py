@@ -49,12 +49,15 @@ class Lane:
         self.state = None
         self.launched_time = None
         self.start_time = None
-        self.count = threading.Event()
         self.foul = threading.Event()
         self.launched = threading.Event()
         self.pre_staged = threading.Event()
         self.staged = threading.Event()
         self.flashing = threading.Event()
+        self.y1 = threading.Event()
+        self.y2 = threading.Event()
+        self.y3 = threading.Event()
+        self.g = threading.Event()
         self.reaction = None
         self.dial_in = 0.0
         self.log = []
@@ -115,12 +118,15 @@ class Lane:
     def reset(self):
         self.start_time = None
         self.launched_time = None
-        self.count.clear()
         self.foul.clear()
         self.flashing.clear()
         self.launched.clear()
         self.pre_staged.clear()
         self.staged.clear()
+        self.y1.clear()
+        self.y2.clear()
+        self.y3.clear()
+        self.g.clear()
         self.clock.reset()
         self.clock_log = []
         for light in self.lights:
@@ -143,7 +149,7 @@ class Lane:
         threading.Thread(None, self.timer, name=self.lane + " timer()").start()
 
     def launch(self):
-        self.count.wait()
+        self.start.wait()
         if self.computer:
             if self.cmin == self.cmax:
                 computer_delay = self.cmin
@@ -159,7 +165,7 @@ class Lane:
         self.reaction = self.launched_time + self.perfect
         self.reaction -= (self.total_delay + self.start_time) 
         if not self.total_delay + self.start_time - time.time() < 0:
-            time.sleep(self.total_delay + self.start_time - time.time())
+            time.sleep(self.total_delay + self.start_time - time.time() - 0.01)
         if self.reaction < self.perfect:
             self.red()
         self.pre_staged.clear()
@@ -171,8 +177,7 @@ class Lane:
 
     def timer(self):
         launch = threading.Thread(None,
-            self.launch, name=self.lane + " launch()")
-        launch.start()
+            self.launch, name=self.lane + " launch()").start()
         threading.Thread(None,
             self.yellow1, name=self.lane + " yellow1()").start()
         threading.Thread(None,
@@ -182,9 +187,6 @@ class Lane:
         threading.Thread(None,
             self.green, name=self.lane + " green()").start()
         self.state = 2
-        self.start.wait()
-        self.count.set()
-        launch.join()
 
     def light(self, number=0):
         if self.foul.is_set():
@@ -200,35 +202,42 @@ class Lane:
         return True
 
     def yellow1(self):
-        self.count.wait()
-        if self.light(0):
+        self.y1.wait()
+        if not self.foul.is_set():
             self.lights[2].on()
-        time.sleep(self.delay)
-        self.lights[2].off()
+            time.sleep(self.delay)
+            self.lights[2].off()
 
     def yellow2(self):
-        self.count.wait()
-        if self.light(1):
+        if self.tree_type == "pro":
+            self.y1.wait()
+        else:
+            self.y2.wait()
+        if not self.foul.is_set():
             self.lights[3].on()
-        time.sleep(self.delay)
-        self.lights[3].off()
+            time.sleep(self.delay)
+            self.lights[3].off()
 
     def yellow3(self):
-        self.count.wait()
-        if self.light(2):
+        if self.tree_type == "pro":
+            self.y1.wait()
+        else:
+            self.y3.wait()
+        if not self.foul.is_set():
             self.lights[4].on()
-        time.sleep(self.delay)
-        self.lights[4].off()
+            time.sleep(self.delay)
+            self.lights[4].off()
 
     def green(self):
-        self.count.wait()
-        if self.light(3):
+        self.g.wait()
+        if not self.foul.is_set():
             self.lights[5].on()
 
     def red(self):
         self.foul.set()
         self.lights[6].on()
-        self.lights[5].off()
+        for light in self.lights[1:6]:
+            light.off()
 
     def win(self):
         self.flashing.set()
