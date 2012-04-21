@@ -33,7 +33,8 @@ class Tree:
     def __init__(self, tree_type="pro", delay=0.4, left_lane="computer",
                  right_lane="human", debug=False, perfect=0.0,
                  left_rollout=0.220, right_rollout=0.220, stats=False,
-                 amin=1.0, amax=3.0, cmin=-0.009, cmax=0.115, auto_reset=False):
+                 amin=1.0, amax=3.0, cmin=-0.009, cmax=0.115, auto_reset=False,
+                 res="480x700", fullscreen=False, hw=False, doublebuf=False):
         self.perfect = perfect
         self.left_rollout = left_rollout
         self.right_rollout = right_rollout
@@ -51,9 +52,19 @@ class Tree:
         self.tie = []
         self.start_time = None
         self.clock = pygame.time.Clock()
-        self.screen = pygame.display.set_mode(
-            (480, 700),
-            pygame.HWSURFACE | pygame.DOUBLEBUF )
+        flags = 0
+        if hw:
+            flags = flags | pygame.HWSURFACE
+        if doublebuf:
+            flags = flags | pygame.DOUBLEBUF
+        if fullscreen:
+            resolution = (0, 0)
+            flags = flags | pygame.FULLSCREEN
+            pygame.mouse.set_visible(False)
+        else:
+            width, height = res.split("x")
+            resolution = (int(width), int(height))
+        self.screen = pygame.display.set_mode(resolution, flags)
         self.scale()
         self.left_lane = Lane(
             tree_type=tree_type,

@@ -39,6 +39,12 @@ def get_options():
     parser.add_option("-0", "--zero-perfect",
         action="store_true", dest="perfect", default=False,
         help="Shows a perfect reaction time as 0.000")
+    parser.add_option("-f", "--fullscreen",
+        action="store_true", dest="fullscreen", default=False,
+        help="Enables fullscreen mode.")
+    parser.add_option("-w", "--window-size",
+        action="store", type="string", dest="window", metavar="WxH", default="480x700", 
+        help="Sets the windowed resolution (ignored if fullscreen) [default: %default]")
     parser.add_option("--left-lane",
         action="store", type="string", dest="left_lane", metavar="PLAYER", default="computer", 
         help="Sets left lane player type <computer|human>     [default: %default]")
@@ -63,6 +69,12 @@ def get_options():
     parser.add_option("--computer-reaction-max",
         action="store", type="float", dest="cmax",  metavar="SECS", default=0.115,
         help="Sets maximum computer reaction time in seconds. [default: %default]")
+    parser.add_option("-b", "--double-buffering",
+        action="store_true", dest="doublebuf", default=False,
+        help="Enables double buffering.")
+    parser.add_option("-a", "--hardware-accel",
+        action="store_true", dest="hw", default=False,
+        help="Enables hardware acceleration (fullscreen only).")
     parser.add_option("-s", "--stats",
         action="store_true", dest="stats", default=False,
         help="Shows statistics for the current session.")
@@ -113,5 +125,7 @@ if __name__ == "__main__":
                 right_lane=options.right_lane, left_rollout=options.left_rollout,
                 right_rollout=options.right_rollout, debug=options.debug,
                 perfect=perfect, amax=options.amax, amin=options.amin,
-                stats=options.stats, auto_reset=options.auto_reset)
+                stats=options.stats, auto_reset=options.auto_reset,
+                res=options.window, fullscreen=options.fullscreen,
+                hw=options.hw, doublebuf=options.doublebuf)
 

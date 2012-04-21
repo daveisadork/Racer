@@ -13,6 +13,10 @@ Options:
                         Sets auto reset time in seconds (0 to disable).
                         [default: 0]
   -0, --zero-perfect    Shows a perfect reaction time as 0.000
+  -f, --fullscreen      Enables fullscreen mode.
+  -w WxH, --window-size=WxH
+                        Sets the windowed resolution (ignored if fullscreen)
+                        [default: 480x700]
   --left-lane=PLAYER    Sets left lane player type <computer|human>
                         [default: computer]
   --right-lane=PLAYER   Sets right lane player type <computer|human>
@@ -31,6 +35,9 @@ Options:
   --computer-reaction-max=SECS
                         Sets maximum computer reaction time in seconds.
                         [default: 0.115]
+  -b, --double-buffering
+                        Enables double buffering.
+  -a, --hardware-accel  Enables hardware acceleration (fullscreen only).
   -s, --stats           Shows statistics for the current session.
   -d, --debug           Shows debugging output.
 
