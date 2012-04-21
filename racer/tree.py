@@ -1,4 +1,22 @@
 #!/bin/env/python
+
+# Racer - A drag racing practice tree
+# Copyright 2012 Dave Hayes <dwhayes@gmail.com>
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
+
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
 # Code comments? We don't need no stinking code comments!
@@ -15,27 +33,40 @@ from lane import Lane
 
 
 class Tree:
-    def __init__(self, type="pro", delay=0.4, left_lane="computer",
-                 right_lane="human", debug=False):
+    def __init__(self, tree_type="pro", delay=0.4, left_lane="computer",
+                 right_lane="human", debug=False, perfect=0.0,
+                 left_rollout=0.220, right_rollout=0.220, stats=False,
+                 amin=1.0, amax=3.0, cmin=-0.009, cmax=0.115):
+        self.perfect = perfect
+        self.left_rollout = left_rollout
+        self.right_rollout = right_rollout
+        self.amin = amin
+        self.amax = amax
         self.two_player = (left_lane == "human" and right_lane == "human")
         self.debug = debug
+        self.stats = stats
         self.delay = delay
         self.start = threading.Event()
         self.staged = threading.Event()
         self.quitting = threading.Event()
-        self.type = type
+        self.tree_type = tree_type
         self.tie = []
         self.start_time = None
+        self.clock = pygame.time.Clock()
         self.screen = pygame.display.set_mode(
             (480, 700),
             pygame.HWSURFACE | pygame.DOUBLEBUF )
         self.scale()
         self.left_lane = Lane(
-            type=type,
+            tree_type=tree_type,
             delay=delay,
             start=self.start,
             lane="left",
             computer=(left_lane=="computer"),
+            perfect=perfect,
+            rollout=left_rollout,
+            cmin=cmin,
+            cmax=cmax,
             surface=self.screen.subsurface(
                 pygame.Rect(
                     self.rect.left,
@@ -44,11 +75,15 @@ class Tree:
                     self.tree_rect.height)),
             background=self.background)
         self.right_lane = Lane(
-            type=type,
+            tree_type=tree_type,
             delay=delay,
             start=self.start,
             lane="right",
             computer=(right_lane=="computer"),
+            perfect=perfect,
+            rollout=right_rollout,
+            cmin=cmin,
+            cmax=cmax,
             surface=self.screen.subsurface(
                 pygame.Rect(
                     self.rect.centerx,
@@ -68,7 +103,7 @@ class Tree:
         if self.debug:
             self.font = pygame.font.Font("assets/font.ttf", 50)
             self.fps = self.font.render("", 1, (255, 255, 255))
-        clock = threading.Thread(None, self.clock, name="clock()")
+        clock = threading.Thread(None, self._clock, name="clock()")
         monitor = threading.Thread(None, self.thread_monitor,
             name="thread_monitor()")
         clock.start()
@@ -132,7 +167,12 @@ class Tree:
             return
         # The following line sets the window for the randomized delay between
         # both lanes having fully staged and the race starting.
-        self.start_time = time.time() + random.randrange(1000, 3000, 1) / 1000.0
+        if self.amin == self.amax:
+            autostart = self.amin
+        else:
+            autostart = random.randrange(
+                self.amin * 1000.0, self.amax * 1000.0, 1) / 1000.0
+        self.start_time = time.time() + autostart
         if self.left_lane.staged.is_set() and self.right_lane.staged.is_set():
             self.staged.set()
         else:
@@ -200,6 +240,8 @@ class Tree:
                     lane.lose()
                 elif lane.computer is False:
                     lane.win()
+        if self.human.log and self.stats:
+            print "Round %d: %0.3f" % (len(self.human.log), self.human.reaction)
      
     def win(self, lane):
         self.lanes[lane].win()
@@ -266,10 +308,6 @@ class Tree:
             #print event
     
     def draw(self):
-        if self.debug:
-            fps_rect = self.fps.get_rect()
-            fps_rect.top = 10
-            fps_rect.left = 10
         self.left_lane.draw()
         self.right_lane.draw()
         dirty = []
@@ -282,17 +320,20 @@ class Tree:
             self.right_lane.dirty = False
             self.right_lane.dirty_rects = []
         if self.debug:
+            self.fps = self.font.render("%0.1f" % self.clock.get_fps(),
+                    1, (255, 255, 255))
+            fps_rect = self.fps.get_rect()
+            fps_rect.top = 10
+            fps_rect.left = 10
+            self.screen.blit(self.background, (fps_rect.left, fps_rect.top), fps_rect)
             self.screen.blit(self.fps, (fps_rect.left, fps_rect.top))
+            dirty.append(fps_rect)
         if dirty:
             pygame.display.update(dirty)
 
-    def clock(self):
-        clock = pygame.time.Clock()
-        while not self.quitting.is_set():
-            if self.debug:
-                self.fps = self.font.render("%0.1f" % clock.get_fps(),
-                    1, (0, 0, 0))
-            clock.tick()
+    def _clock(self):
+        while not self.quitting.is_set():             
+            self.clock.tick()
             self.draw()
   
     def thread_monitor(self):
@@ -313,7 +354,7 @@ class Tree:
         self.left_lane.flashing.clear()
         self.right_lane.flashing.clear()
         self.quitting.set()
-        if self.human.log:
+        if self.human.log and self.stats:
             best = None
             worst = None
             for react in self.human.log:

@@ -15,16 +15,21 @@ from clock import Clock
 
 
 class Lane:
-    def __init__(self, type="sportsman", delay=0.5, start=None, lane="left",
-                 computer=True, surface=None, background=None):
+    def __init__(self, tree_type="sportsman", delay=0.5, start=None, lane="left",
+                 computer=True, perfect=0.0, rollout=0.220, cmin=-0.009,
+                 cmax=0.115, surface=None, background=None):
+        self.perfect = perfect
+        self.rollout = rollout
+        self.cmin = cmin
+        self.cmax = cmax
         self.surface = surface
         self.rect = self.surface.get_rect()
         self.dirty_rects = []
         self.dirty = False
-        self.type = type
-        if type == "sportsman":
+        self.tree_type = tree_type
+        if tree_type == "sportsman":
             self.multiplier = 3
-        elif type == "pro":
+        elif tree_type == "pro":
             self.multiplier = 1
         self.state = None
         self.launched_time = None
@@ -36,7 +41,6 @@ class Lane:
         self.staged = threading.Event()
         self.flashing = threading.Event()
         self.reaction = None
-        self.rollout = 0.220
         self.dial_in = 0.0
         self.log = []
         self.computer = computer
@@ -64,13 +68,13 @@ class Lane:
         self.lane = lane.lower()
         light_width = (self.rect.height / 7) - (self.rect.height / 35.0)
         self.lights = [
-            Light(light_width, type='staging'),
-            Light(light_width, type='staging'),
-            Light(light_width, type='yellow'),
-            Light(light_width, type='yellow'),
-            Light(light_width, type='yellow'),
-            Light(light_width, type='green'),
-            Light(light_width, type='red')
+            Light(light_width, light_type='staging'),
+            Light(light_width, light_type='staging'),
+            Light(light_width, light_type='yellow'),
+            Light(light_width, light_type='yellow'),
+            Light(light_width, light_type='yellow'),
+            Light(light_width, light_type='green'),
+            Light(light_width, light_type='red')
         ]
         #if self.lane == "left":
         #    self.offset = int(round(self.rect.width * 0.49, 0))
@@ -126,19 +130,22 @@ class Lane:
     def launch(self):
         self.count.wait()
         if self.computer:
-            computer_delay = random.randrange(
-                (self.total_delay * 1000) - 9,
-                (self.total_delay * 1000 ) + 115, 1) / 1000.0
+            if self.cmin == self.cmax:
+                computer_delay = self.cmin
+            else:
+                computer_delay = random.randrange(
+                    (self.total_delay * 1000) + (self.cmin * 1000),
+                    (self.total_delay * 1000 ) + (self.cmax * 1000), 1) / 1000.0
             self.launched_time = self.start_time + computer_delay
             self.launched.set()
         else:
             self.launched.wait()
             self.launched_time += self.rollout
-        self.reaction = self.launched_time + self.delay
+        self.reaction = self.launched_time + self.perfect
         self.reaction -= (self.total_delay + self.start_time) 
         if not self.total_delay + self.start_time - time.time() < 0:
             time.sleep(self.total_delay + self.start_time - time.time())
-        if self.reaction < self.delay:
+        if self.reaction < self.perfect:
             self.red()
         self.pre_staged.clear()
         self.lights[0].off()
@@ -146,8 +153,6 @@ class Lane:
         self.lights[1].off()
         self.clock.draw(self.reaction)
         self.log.append(self.reaction)
-        if not self.computer:
-            print "Round %d: %0.3f" % (len(self.log), self.reaction)
 
     def timer(self):
         launch = threading.Thread(None,
@@ -169,7 +174,7 @@ class Lane:
     def light(self, number=0):
         if self.foul.is_set():
             return False
-        if self.type == "pro":
+        if self.tree_type == "pro":
             if number == 3:
                 number = 1
             else:
