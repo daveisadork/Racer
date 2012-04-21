@@ -1,0 +1,36 @@
+Racer - A drag racing practice tree 
+Copyright 2012 Dave Hayes <dwhayes@gmail.com>
+https://github.com/daveisadork/Racer
+
+
+Usage: Racer.py [options]
+
+Options:
+  -h, --help            show this help message and exit
+  -t TYPE, --tree=TYPE  Sets tree type <pro400|pro500|sportsman>
+                        [default: pro400]
+  -r SECS, --auto-reset=SECS
+                        Sets auto reset time in seconds (0 to disable).
+                        [default: 0]
+  -0, --zero-perfect    Shows a perfect reaction time as 0.000
+  --left-lane=PLAYER    Sets left lane player type <computer|human>
+                        [default: computer]
+  --right-lane=PLAYER   Sets right lane player type <computer|human>
+                        [default: human]
+  --left-rollout=SECS   Sets left lane rollout time in seconds.
+                        [default: 0.22]
+  --right-rollout=SECS  Sets right lane rollout time in seconds.
+                        [default: 0.22]
+  --autostart-min=SECS  Sets the minimum delay for autostart in seconds.
+                        [default: 1.0]
+  --autostart-max=SECS  Sets the maximum delay for autostart in seconds.
+                        [default: 3.0]
+  --computer-reaction-min=SECS
+                        Sets minimum computer reaction time in seconds.
+                        [default: -0.009]
+  --computer-reaction-max=SECS
+                        Sets maximum computer reaction time in seconds.
+                        [default: 0.115]
+  -s, --stats           Shows statistics for the current session.
+  -d, --debug           Shows debugging output.
+

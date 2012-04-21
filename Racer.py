@@ -29,41 +29,40 @@ from racer.tree import Tree
 
 
 def get_options():
-    usage = "Usage: %prog [options]"
-    parser = OptionParser(usage=usage)
+    parser = OptionParser()
     parser.add_option("-t", "--tree",
-        action="store", type="string", dest="tree_type", metavar="TYPE", default="pro400",
-        help="<pro400|pro500|sportsman> Sets tree type. Default: %default")
+        action="store", dest="tree_type", metavar="TYPE", default="pro400", 
+        help="Sets tree type <pro400|pro500|sportsman>        [default: %default]")
     parser.add_option("-r", "--auto-reset",
         action="store", type="float", dest="auto_reset", metavar="SECS", default=0,
-        help="Sets auto reset time in seconds (0 to disable). Default: %default")
+        help="Sets auto reset time in seconds (0 to disable). [default: %default]")
     parser.add_option("-0", "--zero-perfect",
         action="store_true", dest="perfect", default=False,
-        help="Shows a perfect reaction time as 0.000 instead of 0.400 or 0.500")
+        help="Shows a perfect reaction time as 0.000")
     parser.add_option("--left-lane",
-        action="store", type="string", dest="left_lane", metavar="PLAYER", default="computer",
-        help="<computer|human> Sets left lane player type. Default: %default")
+        action="store", type="string", dest="left_lane", metavar="PLAYER", default="computer", 
+        help="Sets left lane player type <computer|human>     [default: %default]")
     parser.add_option("--right-lane",
-        action="store", type="string", dest="right_lane", metavar="PLAYER", default="human",
-        help="<computer|human> Sets right lane player type. Default: %default")
+        action="store", type="string", dest="right_lane", metavar="PLAYER", default="human", 
+        help="Sets right lane player type <computer|human>    [default: %default]")
     parser.add_option("--left-rollout",
         action="store", type="float", dest="left_rollout", metavar="SECS", default=0.220,
-        help="Sets left lane rollout time in seconds. Default: %default")
+        help="Sets left lane rollout time in seconds.         [default: %default]")
     parser.add_option("--right-rollout",
         action="store", type="float", dest="right_rollout", metavar="SECS", default=0.220,
-        help="Sets right lane rollout time in seconds. Default: %default")
+        help="Sets right lane rollout time in seconds.        [default: %default]")
     parser.add_option("--autostart-min",
         action="store", type="float", dest="amin", metavar="SECS", default=1.0,
-        help="Sets the minimum delay for autostart in seconds. Default: %default")
+        help="Sets the minimum delay for autostart in seconds. [default: %default]")
     parser.add_option("--autostart-max",
         action="store", type="float", dest="amax", metavar="SECS", default=3.0,
-        help="Sets the maximum delay for autostart in seconds. Default: %default")
+        help="Sets the maximum delay for autostart in seconds. [default: %default]")
     parser.add_option("--computer-reaction-min",
         action="store", type="float", dest="cmin", metavar="SECS", default=-0.009,
-        help="Sets minimum computer reaction time in seconds. Default: %default")
+        help="Sets minimum computer reaction time in seconds. [default: %default]")
     parser.add_option("--computer-reaction-max",
         action="store", type="float", dest="cmax",  metavar="SECS", default=0.115,
-        help="Sets maximum computer reaction time in seconds. Default: %default")
+        help="Sets maximum computer reaction time in seconds. [default: %default]")
     parser.add_option("-s", "--stats",
         action="store_true", dest="stats", default=False,
         help="Shows statistics for the current session.")
