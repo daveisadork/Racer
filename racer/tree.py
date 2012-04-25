@@ -276,11 +276,14 @@ class Tree:
         elif self.left_lane.reaction == self.right_lane.reaction:
             for lane in self.lanes.values():
                 lane.win()
-        if self.human.log and self.stats:
-            print "Round %d: %0.3f" % (len(self.human.log), self.human.reaction)
+        if self.stats:
+            print "Round %d: Left Lane: %0.3f\tRight Lane: %0.3f" % (len(self.left_lane.log), self.left_lane.reaction, self.right_lane.reaction)
         if self.auto_reset:
-            time.sleep(self.auto_reset)
-            self.reset()
+            reset = time.time() + self.auto_reset
+            while time.time() > reset:
+                if self.quitting.is_set():
+                    return
+                self.reset()
      
     def win(self, lane):
         self.lanes[lane].win()
@@ -294,7 +297,8 @@ class Tree:
                 if self.two_player:
                     if not (self.right_lane.pre_staged.is_set() or
                       self.left_lane.pre_staged.is_set()):
-                        self.reset()
+                        if not self.auto_reset:
+                            self.reset()
                     elif (event.key == K_m and
                       self.right_lane.pre_staged.is_set()):
                         self.right_lane.stage()
@@ -312,7 +316,7 @@ class Tree:
                         #else:
                         #    self.human.staged.clear()
                         #    self.human.lights[1].off()
-                    else:
+                    elif not self.auto_reset:
                         self.reset()
             elif event.type == KEYUP and event.key in [K_m, K_z, K_SPACE]:
                 if self.two_player:
@@ -388,24 +392,30 @@ class Tree:
             for thread in sorted(threading.enumerate(),
               key=threading.Thread.getName):
                 print "  " + thread.name
-            
+
+    def print_stats(self):
+        for lane in self.lanes.values():
+            if lane.log:
+                print lane.lane, "stats:"
+                best = None
+                worst = None
+                for react in lane.log:
+                    if not best and not worst:
+                        worst = best = react
+                    if react < best and react >= self.delay:
+                        best = react
+                    if react > best and best < self.delay:
+                        best = react
+                    if react > worst:
+                        worst = react
+                print "\tBest: %0.3f" % best
+                print "\tWorst: %0.3f" % worst
+                print "\tAverage: %0.3f" % round(sum(
+                    lane.log)/len(lane.log), 3)
+
     def quit(self):
         self.quitting.set()
         self.reset()
-        if self.human.log and self.stats:
-            best = None
-            worst = None
-            for react in self.human.log:
-                if not best and not worst:
-                    worst = best = react
-                if react < best and react >= self.delay:
-                    best = react
-                if react > best and best < self.delay:
-                    best = react
-                if react > worst:
-                    worst = react
-            print "Best: %0.3f" % best
-            print "Worst: %0.3f" % worst
-            print "Average: %0.3f" % round(sum(
-                self.human.log)/len(self.human.log), 3)
+        if self.stats:
+            self.print_stats()
         pygame.quit()
