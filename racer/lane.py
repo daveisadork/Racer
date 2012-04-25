@@ -107,12 +107,13 @@ class Lane:
                 light.rect.right = self.rect.right - self.offset
             light.rect.top = int(round(total_offset, 0))
             if counter == 0:
-                total_offset += total_offset / 1.28
+                total_offset += light_width - (light_width / 11.0)
             elif counter == 1:
-                total_offset -= self.rect.height / 90.0
+                total_offset +=  light_width / 2.25
             else:
-                total_offset += (self.rect.height / 700.0) * 1.49
-            total_offset += light.rect.height + (self.rect.height * 0.0098)
+                total_offset += (light_width / 10.0) + light_width
+                #total_offset += (self.rect.height / 700.0) * 1.49
+            
             counter += 1
 
     def reset(self):
