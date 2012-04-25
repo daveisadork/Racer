@@ -157,6 +157,7 @@ if __name__ == "__main__":
                 right_lane=options.right_lane, left_rollout=options.left_rollout,
                 right_rollout=options.right_rollout, debug=options.debug,
                 perfect=perfect, amax=options.amax, amin=options.amin,
+                cmax=options.cmax, cmin=options.cmin,
                 stats=options.stats, auto_reset=options.auto_reset,
                 res=options.window, fullscreen=options.fullscreen,
                 hw=options.hw, doublebuf=options.doublebuf)
