@@ -280,7 +280,7 @@ class Tree:
             print "Round %d: Left Lane: %0.3f\tRight Lane: %0.3f" % (len(self.left_lane.log), self.left_lane.reaction, self.right_lane.reaction)
         if self.auto_reset:
             reset = time.time() + self.auto_reset
-            while time.time() > reset:
+            while time.time() < reset:
                 if self.quitting.is_set():
                     return
                 self.reset()
