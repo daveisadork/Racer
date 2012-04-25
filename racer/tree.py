@@ -283,7 +283,7 @@ class Tree:
             while time.time() < reset:
                 if self.quitting.is_set():
                     return
-                self.reset()
+            self.reset()
      
     def win(self, lane):
         self.lanes[lane].win()
