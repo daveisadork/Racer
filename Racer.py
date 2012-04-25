@@ -21,59 +21,91 @@
 
 # Code comments? We don't need no stinking code comments!
 
+import os
 import sys
+from ConfigParser import ConfigParser
 from optparse import OptionParser
 
 import racer
 from racer.tree import Tree
 
 
+def get_config():
+    config = ConfigParser()
+    config.add_section("tree")
+    config.set("tree", "type", "pro400")
+    config.set("tree", "auto_reset", "0")
+    config.set("tree", "zero_perfect", False)
+    config.set("tree", "autostart_min", 1.0)
+    config.set("tree", "autostart_max", 3.0)
+    config.add_section("player")
+    config.set("player", "left_lane", "computer")
+    config.set("player", "right_lane", "human")
+    config.set("player", "left_rollout", 0.220)
+    config.set("player", "right_rollout", 0.220)
+    config.add_section("display")
+    config.set("display", "fullscreen", False)
+    config.set("display", "resolution", "480x700")
+    config.set("display", "hardware_accel", False)
+    config.set("display", "double_buffering", False)
+    config.add_section("computer")
+    config.set("computer", "reaction_min", -0.009)
+    config.set("computer", "reaction_max", 0.115)
+    if os.path.exists("config.cfg"):
+        config.read("config.cfg")
+    else:
+        with open("config.cfg", "wb") as config_file:
+            config.write(config_file)
+    return config
+
+
 def get_options():
+    config = get_config()
     parser = OptionParser()
     parser.add_option("-t", "--tree",
-        action="store", dest="tree_type", metavar="TYPE", default="pro400", 
+        action="store", dest="tree_type", metavar="TYPE", default=config.get("tree", "type"), 
         help="Sets tree type <pro400|pro500|sportsman>        [default: %default]")
     parser.add_option("-r", "--auto-reset",
-        action="store", type="float", dest="auto_reset", metavar="SECS", default=0,
+        action="store", type="float", dest="auto_reset", metavar="SECS", default=config.getfloat("tree", "auto_reset"),
         help="Sets auto reset time in seconds (0 to disable). [default: %default]")
     parser.add_option("-0", "--zero-perfect",
-        action="store_true", dest="perfect", default=False,
+        action="store_true", dest="perfect", default=config.getboolean("tree", "zero_perfect"),
         help="Shows a perfect reaction time as 0.000")
     parser.add_option("-f", "--fullscreen",
-        action="store_true", dest="fullscreen", default=False,
+        action="store_true", dest="fullscreen", default=config.getboolean("display", "fullscreen"),
         help="Enables fullscreen mode.")
     parser.add_option("-w", "--window-size",
-        action="store", type="string", dest="window", metavar="WxH", default="480x700", 
+        action="store", type="string", dest="window", metavar="WxH", default=config.get("display", "resolution"), 
         help="Sets the windowed resolution (ignored if fullscreen) [default: %default]")
     parser.add_option("--left-lane",
-        action="store", type="string", dest="left_lane", metavar="PLAYER", default="computer", 
+        action="store", type="string", dest="left_lane", metavar="PLAYER", default=config.get("player", "left_lane"), 
         help="Sets left lane player type <computer|human>     [default: %default]")
     parser.add_option("--right-lane",
-        action="store", type="string", dest="right_lane", metavar="PLAYER", default="human", 
+        action="store", type="string", dest="right_lane", metavar="PLAYER", default=config.get("player", "right_lane"), 
         help="Sets right lane player type <computer|human>    [default: %default]")
     parser.add_option("--left-rollout",
-        action="store", type="float", dest="left_rollout", metavar="SECS", default=0.220,
+        action="store", type="float", dest="left_rollout", metavar="SECS", default=config.getfloat("player", "left_rollout"),
         help="Sets left lane rollout time in seconds.         [default: %default]")
     parser.add_option("--right-rollout",
-        action="store", type="float", dest="right_rollout", metavar="SECS", default=0.220,
+        action="store", type="float", dest="right_rollout", metavar="SECS", default=config.getfloat("player", "right_rollout"),
         help="Sets right lane rollout time in seconds.        [default: %default]")
     parser.add_option("--autostart-min",
-        action="store", type="float", dest="amin", metavar="SECS", default=1.0,
+        action="store", type="float", dest="amin", metavar="SECS", default=config.getfloat("tree", "autostart_min"),
         help="Sets the minimum delay for autostart in seconds. [default: %default]")
     parser.add_option("--autostart-max",
-        action="store", type="float", dest="amax", metavar="SECS", default=3.0,
+        action="store", type="float", dest="amax", metavar="SECS", default=config.getfloat("tree", "autostart_max"),
         help="Sets the maximum delay for autostart in seconds. [default: %default]")
     parser.add_option("--computer-reaction-min",
-        action="store", type="float", dest="cmin", metavar="SECS", default=-0.009,
+        action="store", type="float", dest="cmin", metavar="SECS", default=config.getfloat("computer", "reaction_min"),
         help="Sets minimum computer reaction time in seconds. [default: %default]")
     parser.add_option("--computer-reaction-max",
-        action="store", type="float", dest="cmax",  metavar="SECS", default=0.115,
+        action="store", type="float", dest="cmax",  metavar="SECS", default=config.getfloat("computer", "reaction_max"),
         help="Sets maximum computer reaction time in seconds. [default: %default]")
     parser.add_option("-b", "--double-buffering",
-        action="store_true", dest="doublebuf", default=False,
+        action="store_true", dest="doublebuf", default=config.getboolean("display", "double_buffering"),
         help="Enables double buffering.")
     parser.add_option("-a", "--hardware-accel",
-        action="store_true", dest="hw", default=False,
+        action="store_true", dest="hw", default=config.getboolean("display", "hardware_accel"),
         help="Enables hardware acceleration (fullscreen only).")
     parser.add_option("-s", "--stats",
         action="store_true", dest="stats", default=False,
