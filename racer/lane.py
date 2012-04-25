@@ -165,7 +165,7 @@ class Lane:
         self.reaction = self.launched_time + self.perfect
         self.reaction -= (self.total_delay + self.start_time) 
         if not self.total_delay + self.start_time - time.time() < 0:
-            time.sleep(self.total_delay + self.start_time - time.time() - 0.01)
+            time.sleep(self.start_time + self.total_delay + self.reaction -self.perfect - time.time())
         if self.reaction < self.perfect:
             self.red()
         self.pre_staged.clear()
@@ -206,6 +206,7 @@ class Lane:
         if not self.foul.is_set():
             self.lights[2].on()
             time.sleep(self.delay)
+        if not self.foul.is_set():
             self.lights[2].off()
 
     def yellow2(self):
@@ -216,6 +217,7 @@ class Lane:
         if not self.foul.is_set():
             self.lights[3].on()
             time.sleep(self.delay)
+        if not self.foul.is_set():
             self.lights[3].off()
 
     def yellow3(self):
@@ -226,6 +228,7 @@ class Lane:
         if not self.foul.is_set():
             self.lights[4].on()
             time.sleep(self.delay)
+        if not self.foul.is_set():
             self.lights[4].off()
 
     def green(self):
@@ -236,8 +239,7 @@ class Lane:
     def red(self):
         self.foul.set()
         self.lights[6].on()
-        for light in self.lights[1:6]:
-            light.off()
+        self.lights[5].off()
 
     def win(self):
         self.flashing.set()
