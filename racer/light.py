@@ -36,6 +36,7 @@ OFF = {
 
 class Light:
     def __init__(self, width, light_type='yellow'):
+        self.light_type = light_type
         image = pygame.image.load("assets/lights.png")
         image = image.convert_alpha()
         if light_type == "staging":
@@ -56,7 +57,7 @@ class Light:
         self.status = False
         self.rect = self.surface.get_rect()
         self.draw()
-    
+
     def draw(self, active=False):
         self.surface = self.images[int(active)]
         self.dirty = True
@@ -64,7 +65,7 @@ class Light:
     def on(self):
         self.draw(True)
         self.status = True
-    
+
     def off(self):
         self.draw(False)
         self.status = False

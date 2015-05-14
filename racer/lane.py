@@ -113,7 +113,7 @@ class Lane:
             else:
                 total_offset += (light_width / 10.0) + light_width
                 #total_offset += (self.rect.height / 700.0) * 1.49
-            
+
             counter += 1
 
     def reset(self):
@@ -164,7 +164,7 @@ class Lane:
             self.launched.wait()
             self.launched_time += self.rollout
         self.reaction = self.launched_time + self.perfect
-        self.reaction -= (self.total_delay + self.start_time) 
+        self.reaction -= (self.total_delay + self.start_time)
         if not self.total_delay + self.start_time - time.time() < 0:
             time.sleep(self.start_time + self.total_delay + self.reaction -self.perfect - time.time())
         if self.reaction < self.perfect:
@@ -268,16 +268,18 @@ class Lane:
                 self.dirty_rects.append(
                     light.rect.move(self.surface.get_offset()))
                 light.dirty = False
-                if self.dirty:
-                    self.dirty = self.dirty.union(light.rect)
-                else:
-                    self.dirty = light.rect
-        if not self.dirty:
-            return
-        self.surface.blit(
-            self.background,
-            (self.dirty.left, self.dirty.top),
-            area=self.dirty)
+                # if self.dirty:
+                #     self.dirty = self.dirty.union(light.rect)
+                # else:
+                #     self.dirty = light.rect
+        # if self.dirty:
+        #     self.surface.blit(
+        #         self.background,
+        #         (self.dirty.left, self.dirty.top),
+        #         area=self.dirty)
+        self.dirty = bool(len(dirty_objects))
         for light in dirty_objects:
+            self.surface.blit(self.background,
+                              (light.rect.left, light.rect.top),
+                              area=light.rect)
             self.surface.blit(light.surface, (light.rect.left, light.rect.top))
-

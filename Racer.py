@@ -31,30 +31,35 @@ from racer.tree import Tree
 
 
 def get_config():
-    config = ConfigParser()
-    config.add_section("tree")
-    config.set("tree", "type", "pro400")
-    config.set("tree", "auto_reset", "0")
-    config.set("tree", "zero_perfect", False)
-    config.set("tree", "autostart_min", 1.0)
-    config.set("tree", "autostart_max", 3.0)
-    config.add_section("player")
-    config.set("player", "left_lane", "computer")
-    config.set("player", "right_lane", "human")
-    config.set("player", "left_rollout", 0.220)
-    config.set("player", "right_rollout", 0.220)
-    config.add_section("display")
-    config.set("display", "fullscreen", False)
-    config.set("display", "resolution", "480x700")
-    config.set("display", "hardware_accel", False)
-    config.set("display", "double_buffering", False)
-    config.add_section("computer")
-    config.set("computer", "reaction_min", -0.009)
-    config.set("computer", "reaction_max", 0.115)
-    if os.path.exists("config.cfg"):
-        config.read("config.cfg")
+    if sys.platform == 'win32':
+        config_path = 'Racer.ini'
     else:
-        with open("config.cfg", "wb") as config_file:
+        config_path = 'racer.cfg'
+    config = ConfigParser()
+    
+    if os.path.exists(config_path):
+        config.read(config_path)
+    else:
+        config.add_section("tree")
+        config.set("tree", "type", "pro400")
+        config.set("tree", "auto_reset", "0")
+        config.set("tree", "zero_perfect", False)
+        config.set("tree", "autostart_min", 1.0)
+        config.set("tree", "autostart_max", 3.0)
+        config.add_section("player")
+        config.set("player", "left_lane", "computer")
+        config.set("player", "right_lane", "human")
+        config.set("player", "left_rollout", 0.220)
+        config.set("player", "right_rollout", 0.220)
+        config.add_section("display")
+        config.set("display", "fullscreen", False)
+        config.set("display", "resolution", "480x700")
+        config.set("display", "hardware_accel", False)
+        config.set("display", "double_buffering", False)
+        config.add_section("computer")
+        config.set("computer", "reaction_min", -0.009)
+        config.set("computer", "reaction_max", 0.115)
+        with open(config_path, "wb") as config_file:
             config.write(config_file)
     return config
 

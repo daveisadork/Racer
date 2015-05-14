@@ -27,6 +27,7 @@ import pygame
 from pygame.locals import *
 
 from lane import Lane
+#import utils
 
 
 class Tree:
@@ -121,11 +122,12 @@ class Tree:
         self.event_loop()
         clock.join()
         #monitor.join()
-     
+
     def scale(self):
         self.rect = self.screen.get_rect()
         background = pygame.image.load("assets/background.png")
         background.convert()
+        #background = utils.load_background()
         background_rect = background.get_rect()
         if float(self.rect.width) / float(self.rect.height) <= 1.6:
             background = pygame.transform.smoothscale(
@@ -140,6 +142,7 @@ class Tree:
         temp_rect.centerx = background_rect.centerx
         temp_rect.centery = background_rect.centery
         self.background = background.subsurface(temp_rect)
+        #self.vignette = utils.load_vignette()
         self.vignette = pygame.image.load("assets/vignette.png")
         self.vignette.convert_alpha()
         self.vignette = pygame.transform.smoothscale(
@@ -150,7 +153,7 @@ class Tree:
         self.tree_rect = self.tree.get_rect()
         self.tree_rect = self.tree_rect.fit(self.rect)
         self.tree = pygame.transform.smoothscale(
-            self.tree, 
+            self.tree,
             (self.tree_rect.width, self.tree_rect.height))
         self.tree_rect.midbottom = self.rect.midbottom
         self.background.blit(self.vignette, (0, 0))
@@ -198,7 +201,7 @@ class Tree:
         else:
             self.reset()
             return
-    
+
     def timer(self):
         left = threading.Thread(None, self.left_lane.timer,
             name="Left Lane timer()")
@@ -234,7 +237,7 @@ class Tree:
         self.right_lane.launched.wait()
         left.join()
         right.join()
-    
+
     def race(self):
         self.left_lane.start_time = self.right_lane.start_time = self.start_time
         self.timer()
@@ -284,14 +287,15 @@ class Tree:
                 if self.quitting.is_set():
                     return
             self.reset()
-     
+
     def win(self, lane):
+        print 'win lane %s' % lane
         self.lanes[lane].win()
-    
+
     def event_loop(self):
         pygame.event.set_allowed(None)
         pygame.event.set_allowed([KEYDOWN, KEYUP, QUIT])
-        while not self.quitting.is_set(): 
+        while not self.quitting.is_set():
             event = pygame.event.wait()
             if event.type == KEYDOWN and event.key in [K_m, K_z, K_SPACE]:
                 if self.two_player:
@@ -337,7 +341,7 @@ class Tree:
                             self.tie.append(self.left_lane)
                         else:
                             self.left_lane.staged.clear()
-                            self.left_lane.lights[1].off()                                
+                            self.left_lane.lights[1].off()
                 elif event.key == K_SPACE:
                     if self.human.staged.is_set() and self.start.is_set():
                         self.human.launched_time = time.time()
@@ -349,7 +353,7 @@ class Tree:
               (event.type == KEYDOWN and event.key in [K_ESCAPE, K_q])):
                 self.quit()
             #print event
-    
+
     def draw(self):
         self.left_lane.draw()
         self.right_lane.draw()
@@ -362,7 +366,7 @@ class Tree:
             dirty += self.right_lane.dirty_rects
             self.right_lane.dirty = False
             self.right_lane.dirty_rects = []
-        if self.debug and False:
+        if self.debug:
             self.fps = self.font.render("%0.1f" % self.clock.get_fps(),
                     1, (255, 255, 255))
             fps_rect = self.fps.get_rect()
@@ -375,10 +379,10 @@ class Tree:
             pygame.display.update(dirty)
 
     def _clock(self):
-        while not self.quitting.is_set():             
+        while not self.quitting.is_set():
             self.clock.tick()
             self.draw()
-  
+
     def thread_monitor(self):
         if not self.debug:
             return
